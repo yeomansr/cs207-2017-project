@@ -1,4 +1,4 @@
-# Cyborg Headpiece (cs207-2017-project) [Version 1.0.2]
+# Cyborg Headpiece (cs207-2017-project) [Version 1.0.3]
 License:  [*Unlicense*](http://unlicense.org)
 
 This is the repository for Richard Yeomans' CS 207 Project.
@@ -55,16 +55,21 @@ The project team consists of:
 It's a small team.
 
 
-## Credits and Acknowledgements
+## Acknowledgements
 ### Credits
 - Robin Canham - her assistance and support was invaluable
+- Trevor Tomesh - CS 207 class instructor, provided insight and assistance all over the place
 
 ### References
 - *Mastering Markdown · GitHub Guides*.  (2017).  *Guides.github.com*.  Retrieved 5 February 2017, from [https://guides.github.com/features/mastering-markdown/](https://guides.github.com/features/mastering-markdown/)
 - Stern, B. & Burgess, P.  (2017).  *Cyberpunk Spikes | Make:. Make: DIY Projects and Ideas for Makers*.  Retrieved 5 February 2017, from [http://makezine.com/projects/make-42/cyberpunk-spikes/](http://makezine.com/projects/make-42/cyberpunk-spikes/)
+- Tomesh, T.  (2017).  *trevortomesh/OSHRepo*.  *GitHub*.  Retrieved 5 February 2017, from [https://github.com/trevortomesh/OSHRepo](https://github.com/trevortomesh/OSHRepo)
 
 
 ## Version History
+version 1.0.3
+- added important reference
+
 version 1.0.2
 - fixing formatting errors in README
 
