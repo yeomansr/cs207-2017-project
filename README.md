@@ -1,5 +1,5 @@
-# Cyborg Headpiece (cs207-2017-project) [Version 1.0.1]
-[*Unlicense*](http://unlicense.org)
+# Cyborg Headpiece (cs207-2017-project) [Version 1.0.2]
+License:  [*Unlicense*](http://unlicense.org)
 
 This is the repository for Richard Yeomans' CS 207 Project.
 
@@ -10,14 +10,14 @@ As my skill level with Arduino and electronics in general is still quite limited
 
 
 ## Manifest
-Some of these directories will be generated once files are placed into the locations:
+This directory structure will be generated once files are placed into the appropriate locations:
 - **/build** - compiled code files
 - **/examples** - example code to test hardware
 - **/hardware** - printed circuit board files and 3D models (.ftz, .stl)
 - **/img** - image files
 - **/lib** - supplementary libraries required for build
 - **/src** - source code files (.ino)
-- **/LICENSE** - Unlicense
+- **/LICENSE** - Unlicense file
 - **/README.md** - this file
 
 
@@ -28,6 +28,7 @@ At this time, as I have not even selected my microcontroller, this list is more 
 
 ### Bill of Materials
 - 1x [Adafruit GEMMA v2](https://www.adafruit.com/products/1222)
+- 1x [Adafruit FLORA](https://www.adafruit.com/products/659)
 - 1x [NeoPixel Ring - 12 x 5050 RGB LED](https://www.adafruit.com/products/1643)
 
 
@@ -64,6 +65,9 @@ It's a small team.
 
 
 ## Version History
+version 1.0.2
+- fixing formatting errors in README
+
 version 1.0.1
 - fixing formatting errors in README
 
