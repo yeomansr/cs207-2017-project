@@ -1,4 +1,4 @@
-# Cyborg Headpiece (cs207-2017-project) [Version 1.1.2]
+# Cyborg Headpiece (cs207-2017-project) [Version 1.1.3]
 License:  [*Unlicense*](http://unlicense.org)
 
 This is the repository for Richard Yeomans' CS 207 Project.
@@ -64,12 +64,17 @@ It's a small team.
 - Trevor Tomesh - CS 207 class instructor, provided insight and assistance all over the place
 
 ### References
+i- *Downloads | Introducing Circuit Playground | Adafruit Learning System*.  (2017).  *Learn.adafruit.com*.  Retrieved 19 March 2017, from [https://learn.adafruit.com/introducing-circuit-playground/downloads](https://learn.adafru
+it.com/introducing-circuit-playground/downloads)
 - *Mastering Markdown · GitHub Guides*.  (2017).  *Guides.github.com*.  Retrieved 5 February 2017, from [https://guides.github.com/features/mastering-markdown/](https://guides.github.com/features/mastering-markdown/)
 - Stern, B. & Burgess, P.  (2017).  *Cyberpunk Spikes | Make:. Make: DIY Projects and Ideas for Makers*.  Retrieved 5 February 2017, from [http://makezine.com/projects/make-42/cyberpunk-spikes/](http://makezine.com/projects/make-42/cyberpunk-spikes/)
 - Tomesh, T.  (2017).  *trevortomesh/OSHRepo*.  *GitHub*.  Retrieved 5 February 2017, from [https://github.com/trevortomesh/OSHRepo](https://github.com/trevortomesh/OSHRepo)
 
 
 ## Version History
+version 1.1.3
+- added reference to Adafruit downloads for Circuit Playground
+
 version 1.1.2
 - added manufacturer information to materials
 
