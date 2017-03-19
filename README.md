@@ -1,4 +1,4 @@
-# Cyborg Headpiece (cs207-2017-project) [Version 1.0.3]
+# Cyborg Headpiece (cs207-2017-project) [Version 1.1.0]
 License:  [*Unlicense*](http://unlicense.org)
 
 This is the repository for Richard Yeomans' CS 207 Project.
@@ -12,6 +12,7 @@ As my skill level with Arduino and electronics in general is still quite limited
 ## Manifest
 This directory structure will be generated once files are placed into the appropriate locations:
 - **/build** - compiled code files
+- **/doc** - technical documents
 - **/examples** - example code to test hardware
 - **/hardware** - printed circuit board files and 3D models (.ftz, .stl)
 - **/img** - image files
@@ -22,14 +23,16 @@ This directory structure will be generated once files are placed into the approp
 
 
 ## Requirements and Materials
-At this time, as I have not even selected my microcontroller, this list is more just ideas of what might be used:
+This list is still evolving, but here are my intentions currently:
 ### Dependencies
+- [add support for Adafruit to Arduino IDE] (https://learn.adafruit.com/introducing-circuit-playground/arduino-1-dot-6-x-ide)
 - [Adafruit NeoPixel Library] (https://github.com/adafruit/Adafruit_NeoPixel)
 
 ### Bill of Materials
-- 1x [Adafruit GEMMA v2](https://www.adafruit.com/products/1222)
+- 1x [Circuit Playground - Developer Edition](https://www.adafruit.com/products/3000)
+- 1x [NeoPixel Ring - 24 x 5050 RGB LED](https://www.adafruit.com/products/1586)
+- 1x [NeoPixel Shield for Arduino - 40 RGB LED Pixel Matrix](https://www.adafruit.com/products/1430)
 - 1x [Adafruit FLORA](https://www.adafruit.com/products/659)
-- 1x [NeoPixel Ring - 12 x 5050 RGB LED](https://www.adafruit.com/products/1643)
 
 
 ## Build Instructions
@@ -67,6 +70,9 @@ It's a small team.
 
 
 ## Version History
+version 1.1.0
+- updates to bill of materials
+
 version 1.0.3
 - added important reference
 
