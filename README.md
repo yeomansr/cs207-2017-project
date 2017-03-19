@@ -1,4 +1,4 @@
-# Cyborg Headpiece (cs207-2017-project) [Version 1.1.0]
+# Cyborg Headpiece (cs207-2017-project) [Version 1.1.1]
 License:  [*Unlicense*](http://unlicense.org)
 
 This is the repository for Richard Yeomans' CS 207 Project.
@@ -25,8 +25,8 @@ This directory structure will be generated once files are placed into the approp
 ## Requirements and Materials
 This list is still evolving, but here are my intentions currently:
 ### Dependencies
-- [add support for Adafruit to Arduino IDE] (https://learn.adafruit.com/introducing-circuit-playground/arduino-1-dot-6-x-ide)
-- [Adafruit NeoPixel Library] (https://github.com/adafruit/Adafruit_NeoPixel)
+- [add support for Adafruit to Arduino IDE](https://learn.adafruit.com/introducing-circuit-playground/arduino-1-dot-6-x-ide)
+- [Adafruit NeoPixel Library](https://github.com/adafruit/Adafruit_NeoPixel)
 
 ### Bill of Materials
 - 1x [Circuit Playground - Developer Edition](https://www.adafruit.com/products/3000)
@@ -70,6 +70,9 @@ It's a small team.
 
 
 ## Version History
+version 1.1.1
+- fixing formatting errors in README
+
 version 1.1.0
 - updates to bill of materials
 
