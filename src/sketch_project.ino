@@ -37,7 +37,7 @@
  *  Connect a Yellow wire from Arduino Uno Pin 2 to j3
  *  
  * Date:
- *  2017-03-18
+ *  2017-03-19
  * 
  * Name:
  *  Richard Yeomans
@@ -49,47 +49,52 @@
 #include <Wire.h>
 #include <SPI.h>
 
-// This is the baud rate to use when communicating with serial out
+// Serial Communication details
 const int baud = 9600;
 
-// This is the pin to control the NeoPixel Matrix
+// Which pins are connected to what
 const int pinMatrix = 10;
-
-// This is the pin to control the NeoPixel Ring
 const int pinRing = 2;
 
-// This is the motion delay for the NeoPixel Matrix
-int holdMatrix;
-
-// This is the motion delay for the NeoPixel Ring
-int holdRing;
-
-// This is the NeoPixel on the Circuit Playground we are tracking
-int cpNeoPixel;
-
-// This is the color for NeoPixel on the Circuit Playground we are tracking
-int cpNeoPixelColor;
-
-// This is the motion delay for the NeoPixel on the Circuit Playground
-int holdCPNeoPixel;
-
-// This is the stored time count for the NeoPixel Matrix
+// Stored time counts
 unsigned long previousMillisMatrix;
-
-// This is the stored time count for the NeoPixel Ring
 unsigned long previousMillisRing;
-
-// This is the stored time count for the NeoPixel on the Circuit Playground
 unsigned long previousMillisCPNeoPixel;
 
-// This is the threshold for detecting sound on the sound sensor
-int threshSoundSensor = 350;
+// Motion delay thresholds
+int holdMatrix;
+int holdRing;
+int holdCPNeoPixel;
+
+// The NeoPixel on the Circuit Playground details
+int cpNeoPixel;
+int cpNeoPixelColor;
+
+// Sound mechanism details
+int soundSensorThresh;
+int soundSensorMax;
+int soundSensorMin;
+
+// Sound mechanism details - Bars
+const int soundBarNeoPixelCount = 10;
+boolean soundBarNeoPixelActive[soundBarNeoPixelCount];
+int soundBarNeoPixelColorR[soundBarNeoPixelCount];
+int soundBarNeoPixelColorG[soundBarNeoPixelCount];
+int soundBarNeoPixelColorB[soundBarNeoPixelCount];
+
+int soundBarMax;
+int soundBarMin;
+int soundBarPeak;
+int soundBarRaw;
+int soundBarDropRate;
+
 
 // This is the sound level history
 int historySoundSensor[5];
 
 // This is the sound level history count
 int historyCountSoundSensor = 5;
+
 
 // If this is true, debug mode is on
 boolean stateDebug = true;
@@ -100,22 +105,32 @@ void setup() {
 
   // prepare serial output
   Serial.begin(baud);
-
-  // send original message to serial output for reference
   Serial.println("Begin program");
 
   // initialize Circuit Playground
   CircuitPlayground.begin();
 
   // setting initial values for variables
-  holdMatrix = 10;
-  holdRing = 10;
-  holdCPNeoPixel = 150;
-  cpNeoPixel = 0;
   previousMillisMatrix = 0;
   previousMillisRing = 0;
   previousMillisCPNeoPixel = 0;
+  holdMatrix = 200;
+  holdRing = 200;
+  holdCPNeoPixel = 200;
+
+  cpNeoPixel = 0;
+
+  soundSensorThresh = 338;
+  soundBarMax = 20;
+  soundBarMin = 0;
+  soundBarPeak = 0;
+  soundBarRaw = 0;
+  soundBarDropRate = 1;
   historyCountSoundSensor = 0;
+
+  // callibration
+  soundSensorMax = soundSensorThresh;
+  soundSensorMin = soundSensorThresh;
 }
 
 
@@ -131,9 +146,51 @@ void loop() {
   boolean stateButton2 = CircuitPlayground.rightButton();
   int stateSoundSensor = CircuitPlayground.soundSensor();
 
-  // do stuff
-  boolean stateCPNeoPixel;
-  if (stateSoundSensor > threshSoundSensor) {
+  // fudging output for testing
+//  stateSoundSensor = soundSensorThresh + 10;
+
+  // figure out sound bars
+  soundSensorMax = max(soundSensorMax, stateSoundSensor);
+  soundSensorMin = min(soundSensorMin, stateSoundSensor);
+
+  if (stateSoundSensor > soundSensorThresh) {
+    soundBarRaw = min(stateSoundSensor - soundSensorThresh, soundBarMax);
+  } else {
+    soundBarRaw = 0;
+  }
+
+//  soundBarMax = max(soundBarMax, soundBarRaw);
+//  soundBarMin = min(soundBarMin, soundBarRaw);
+
+  if (currentMillis - previousMillisCPNeoPixel > holdCPNeoPixel) {
+    previousMillisCPNeoPixel = currentMillis;
+    soundBarPeak -= soundBarDropRate;
+  }
+  soundBarPeak = max(soundBarPeak, soundBarRaw);
+
+  int soundBarPeakCount = map(soundBarPeak, soundBarMin, soundBarMax, 0, soundBarNeoPixelCount - 1);
+  int soundBarRawCount = map(soundBarRaw, soundBarMin, soundBarMax, 0, soundBarNeoPixelCount - 1);
+  for (int i = 0; i < soundBarNeoPixelCount; i++) {
+    if (i < soundBarPeakCount) {
+      if (i < soundBarRawCount) {
+        soundBarNeoPixelColorR[i] = 255;
+        soundBarNeoPixelColorG[i] = 255;
+        soundBarNeoPixelColorB[i] = 0;
+      } else {
+        soundBarNeoPixelColorR[i] = 255;
+        soundBarNeoPixelColorG[i] = 0;
+        soundBarNeoPixelColorB[i] = 0;
+      }
+    } else {
+      soundBarNeoPixelColorR[i] = 0;
+      soundBarNeoPixelColorG[i] = 0;
+      soundBarNeoPixelColorB[i] = 0;
+    }
+  }
+
+
+
+/*
     historyCountSoundSensor++;
     if (historyCountSoundSensor >= sizeof(historySoundSensor)) {
       historyCountSoundSensor = 0;
@@ -162,8 +219,17 @@ void loop() {
       cpNeoPixel = 0;
     }
   }
+*/
 
   // update all outputs
+  for (int i = 0; i < soundBarNeoPixelCount; i++) {
+    if (soundBarNeoPixelActive[i]) {
+      CircuitPlayground.setPixelColor(i, soundBarNeoPixelColorR[i], soundBarNeoPixelColorG[i], soundBarNeoPixelColorB[i]);
+    } else {
+      CircuitPlayground.setPixelColor(i, soundBarNeoPixelColorR[i], soundBarNeoPixelColorG[i], soundBarNeoPixelColorB[i]);
+    }
+  }
+/*
   if (stateCPNeoPixel) {
     for (int i = 0; i < 10; i++) {
       CircuitPlayground.setPixelColor(i, CircuitPlayground.colorWheel(cpNeoPixelColor));
@@ -171,14 +237,35 @@ void loop() {
   } else {
     CircuitPlayground.clearPixels();
   }
+*/
 
   // send message to serial output
   if (stateDebug) {
-    Serial.println(CircuitPlayground.soundSensor());
+    // Sound mechanism details
+    Serial.println();
+    Serial.print("RAW out: ");
+    Serial.print(stateSoundSensor);
+    Serial.print("  min: ");
+    Serial.print(soundSensorMin);
+    Serial.print("  max: ");
+    Serial.print(soundSensorMax);
+    Serial.print("  thresh: ");
+    Serial.println(soundSensorThresh);
+    Serial.print("CALC out: ");
+    Serial.print(soundBarRaw);
+    Serial.print("  min: ");
+    Serial.print(soundBarMin);
+    Serial.print("  max: ");
+    Serial.print(soundBarMax);
+    Serial.print("  peak: ");
+    Serial.println(soundBarPeak);
+
 //    Serial.print("X: "); Serial.print(CircuitPlayground.motionX());
 //    Serial.print(" \tY: "); Serial.print(CircuitPlayground.motionY());
 //    Serial.print(" \tZ: "); Serial.print(CircuitPlayground.motionZ());
 //    Serial.println(" m/s^2");
+
+    delay(30);
   }
 }
 
