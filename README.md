@@ -1,4 +1,4 @@
-# Cyborg Headpiece (cs207-2017-project) [Version 1.1.1]
+# Cyborg Headpiece (cs207-2017-project) [Version 1.1.2]
 License:  [*Unlicense*](http://unlicense.org)
 
 This is the repository for Richard Yeomans' CS 207 Project.
@@ -29,9 +29,9 @@ This list is still evolving, but here are my intentions currently:
 - [Adafruit NeoPixel Library](https://github.com/adafruit/Adafruit_NeoPixel)
 
 ### Bill of Materials
-- 1x [Circuit Playground - Developer Edition](https://www.adafruit.com/products/3000)
-- 1x [NeoPixel Ring - 24 x 5050 RGB LED](https://www.adafruit.com/products/1586)
-- 1x [NeoPixel Shield for Arduino - 40 RGB LED Pixel Matrix](https://www.adafruit.com/products/1430)
+- 1x [Adafruit Circuit Playground - Developer Edition](https://www.adafruit.com/products/3000)
+- 1x [Adafruit NeoPixel Ring - 24 x 5050 RGB LED](https://www.adafruit.com/products/1586)
+- 1x [Adafruit NeoPixel Shield for Arduino - 40 RGB LED Pixel Matrix](https://www.adafruit.com/products/1430)
 - 1x [Adafruit FLORA](https://www.adafruit.com/products/659)
 
 
@@ -70,6 +70,9 @@ It's a small team.
 
 
 ## Version History
+version 1.1.2
+- added manufacturer information to materials
+
 version 1.1.1
 - fixing formatting errors in README
 
