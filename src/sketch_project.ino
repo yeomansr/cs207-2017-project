@@ -37,7 +37,7 @@
  *  Connect a Yellow wire from Arduino Uno Pin 2 to j3
  *  
  * Date:
- *  2017-03-19
+ *  2017-03-22
  * 
  * Name:
  *  Richard Yeomans
@@ -74,6 +74,12 @@ int cpNeoPixelColor;
 int soundSensorThresh;
 int soundSensorMax;
 int soundSensorMin;
+const int soundSensorHistorySize = 10;
+int soundSensorHistory[soundSensorHistorySize];
+int soundSensorHistoryItem;
+int soundSensorHistoryMax;
+int soundSensorHistoryMin;
+int soundSensorHistoryAverage;
 
 // Sound mechanism details - Bars
 const int soundBarNeoPixelCount = 10;
@@ -114,14 +120,19 @@ void setup() {
   previousMillisMatrix = 0;
   previousMillisRing = 0;
   previousMillisCPNeoPixel = 0;
-  holdMatrix = 200;
-  holdRing = 200;
-  holdCPNeoPixel = 200;
+  holdMatrix = 150;
+  holdRing = 150;
+  holdCPNeoPixel = 150;
 
   cpNeoPixel = 0;
 
   soundSensorThresh = 338;
-  soundBarMax = 20;
+  soundSensorHistoryItem = 0;
+  for (int i = 0; i < soundSensorHistorySize; i++) {
+    soundSensorHistory[i] = soundSensorThresh;
+  }
+
+  soundBarMax = 30;
   soundBarMin = 0;
   soundBarPeak = 0;
   soundBarRaw = 0;
@@ -146,15 +157,27 @@ void loop() {
   boolean stateButton2 = CircuitPlayground.rightButton();
   int stateSoundSensor = CircuitPlayground.soundSensor();
 
-  // fudging output for testing
-//  stateSoundSensor = soundSensorThresh + 10;
+  // update sound sensor history
+  soundSensorHistoryItem++;
+  if (soundSensorHistoryItem >= soundSensorHistorySize) {
+    soundSensorHistoryItem = 0;
+  }
+  soundSensorHistory[soundSensorHistoryItem] = stateSoundSensor;
+
+  soundSensorHistoryMax = soundSensorThresh;
+  soundSensorHistoryMin = soundSensorThresh;
+  for (int i = 0; i < soundSensorHistorySize; i++) {
+    soundSensorHistoryMax = max(soundSensorHistoryMax, soundSensorHistory[i]);
+    soundSensorHistoryMin = min(soundSensorHistoryMin, soundSensorHistory[i]);
+  }
+  soundSensorHistoryAverage = soundSensorHistoryMax - soundSensorHistoryMin;
 
   // figure out sound bars
   soundSensorMax = max(soundSensorMax, stateSoundSensor);
   soundSensorMin = min(soundSensorMin, stateSoundSensor);
 
-  if (stateSoundSensor > soundSensorThresh) {
-    soundBarRaw = min(stateSoundSensor - soundSensorThresh, soundBarMax);
+  if (soundSensorHistoryAverage > 5) {
+    soundBarRaw = min(soundSensorHistoryAverage, soundBarMax);
   } else {
     soundBarRaw = 0;
   }
@@ -168,12 +191,12 @@ void loop() {
   }
   soundBarPeak = max(soundBarPeak, soundBarRaw);
 
-  int soundBarPeakCount = map(soundBarPeak, soundBarMin, soundBarMax, 0, soundBarNeoPixelCount - 1);
-  int soundBarRawCount = map(soundBarRaw, soundBarMin, soundBarMax, 0, soundBarNeoPixelCount - 1);
+  int soundBarPeakCount = map(soundBarPeak, soundBarMin, soundBarMax, 0, soundBarNeoPixelCount);
+  int soundBarRawCount = map(soundBarRaw, soundBarMin, soundBarMax, 0, soundBarNeoPixelCount);
   for (int i = 0; i < soundBarNeoPixelCount; i++) {
     if (i < soundBarPeakCount) {
       if (i < soundBarRawCount) {
-        soundBarNeoPixelColorR[i] = 255;
+        soundBarNeoPixelColorR[i] = 0;
         soundBarNeoPixelColorG[i] = 255;
         soundBarNeoPixelColorB[i] = 0;
       } else {
