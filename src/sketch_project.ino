@@ -37,7 +37,7 @@
  *  Connect a Yellow wire from Arduino Uno Pin 2 to j3
  *  
  * Date:
- *  2017-03-24
+ *  2017-03-25
  * 
  * Name:
  *  Richard Yeomans
@@ -48,20 +48,24 @@
 #include <Adafruit_CircuitPlayground.h>
 #include <Wire.h>
 #include <SPI.h>
+#include <Adafruit_NeoPixel.h>
 
 // Serial Communication details
 const int baud = 9600;
 
 // Which pins are connected to what
+const int pinShield = 6;
 const int pinMatrix = 10;
 const int pinRing = 2;
 
 // Stored time counts
+unsigned long previousMillisShield;
 unsigned long previousMillisMatrix;
 unsigned long previousMillisRing;
 unsigned long previousMillisCPNeoPixel;
 
 // Motion delay thresholds
+int holdShield;
 int holdMatrix;
 int holdRing;
 int holdCPNeoPixel;
@@ -69,6 +73,14 @@ int holdCPNeoPixel;
 // The NeoPixel on the Circuit Playground details
 int cpNeoPixel;
 int cpNeoPixelColor;
+
+// Adafruit NeoPixel Shield for Arduino - 40 RGB LED Pixel Matrix details
+const int shieldRows = 8;
+const int shieldCols = 5;
+int shieldTotal = shieldRows * shieldCols;
+Adafruit_NeoPixel shield = Adafruit_NeoPixel(shieldTotal, pinShield, NEO_GRB + NEO_KHZ800);
+int shieldY;  // corresponds with rows
+int shieldX;  // corresponds with cols
 
 // Sound mechanism details
 const int soundSensorThresh = 339;
@@ -113,6 +125,10 @@ void setup() {
   // initialize Circuit Playground
   CircuitPlayground.begin();
 
+  // initialize NeoPixel Shield
+  shield.begin();
+  shield.show();  // Initialize all pixels to 'off'
+
   // setting initial values for variables
   previousMillisMatrix = 0;
   previousMillisRing = 0;
@@ -122,6 +138,8 @@ void setup() {
   holdCPNeoPixel = 150;
 
   cpNeoPixel = 0;
+  shieldX = 3;
+  shieldY = 0;
 
   soundBarActive = 0;
   soundBarRaw = soundBarNeoPixelMid;
@@ -245,6 +263,27 @@ void loop() {
   }
 */
 
+
+  // debuging code for displays
+  int pixel;
+  if (stateDebug) {
+    pixel = shieldPixel(shieldY, shieldX);
+    shield.setPixelColor(pixel, 0, 0, 0);
+
+    shieldX++;
+    if(shieldX >= shieldCols) {
+      shieldX = 0;
+      shieldY++;
+      if (shieldY >= shieldRows) {
+        shieldY = 0;
+      }
+    }
+
+    pixel = shieldPixel(shieldY, shieldX);
+    shield.setPixelColor(pixel, 127, 127, 127);
+    shield.show();
+  }
+
   // send message to serial output
   if (stateDebug) {
     // Sound mechanism details
@@ -265,13 +304,31 @@ void loop() {
     Serial.print(soundBarPeakHi);
     Serial.print("  active: ");
     Serial.println(soundBarActive);
+    Serial.print("SHIELD rows: ");
+    Serial.print(shieldRows);
+    Serial.print("  cols: ");
+    Serial.print(shieldCols);
+    Serial.print("  Y: ");
+    Serial.print(shieldY);
+    Serial.print("  X: ");
+    Serial.print(shieldX);
+    Serial.print("  obj: ");
+    Serial.println(pixel);
 
 //    Serial.print("X: "); Serial.print(CircuitPlayground.motionX());
 //    Serial.print(" \tY: "); Serial.print(CircuitPlayground.motionY());
 //    Serial.print(" \tZ: "); Serial.print(CircuitPlayground.motionZ());
 //    Serial.println(" m/s^2");
 
-    delay(30);
+    delay(200);
   }
+}
+
+
+int shieldPixel(int row, int col) {
+  // return the NeoPixel number for the desired row and col
+  // remember that row 0 is first row, and col 0 is first col
+  int pixel = (col * shieldRows) + row;
+  return pixel;
 }
 
