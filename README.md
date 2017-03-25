@@ -1,4 +1,4 @@
-# Cyborg Headpiece (cs207-2017-project) [Version 1.1.5]
+# Cyborg Headpiece (cs207-2017-project) [Version 1.2.0]
 License:  [*Unlicense*](http://unlicense.org)
 
 This is the repository for Richard Yeomans' CS 207 Project.
@@ -7,6 +7,8 @@ A cyborg headpiece, by my definition, will be a piece of wearable technology,
 affixed to the head of the wearer, but made to look as though it is integrated into the flesh of the wearer.
 
 As my skill level with Arduino and electronics in general is still quite limited, I anticipate that this project will evolve a great deal as our class progresses and I learn more.  As such, going into much more detail regarding what I will create may not be valuable at this time.  Therefore, expect that this README will change and evolve with this project.
+
+It has been decided that I will not affix this headpiece to my head.  I will instead affix this headpiece to a hat that I will wear on my head.  By doing this, I can use conductive thread to connect the pieces, rather than needing to solder wires.
 
 
 ## Manifest
@@ -67,10 +69,14 @@ It's a small team.
 - *Downloads | Introducing Circuit Playground | Adafruit Learning System*.  (2017).  *Learn.adafruit.com*.  Retrieved 19 March 2017, from [https://learn.adafruit.com/introducing-circuit-playground/downloads](https://learn.adafruit.com/introducing-circuit-playground/downloads)
 - *Mastering Markdown · GitHub Guides*.  (2017).  *Guides.github.com*.  Retrieved 5 February 2017, from [https://guides.github.com/features/mastering-markdown/](https://guides.github.com/features/mastering-markdown/)
 - Stern, B. & Burgess, P.  (2017).  *Cyberpunk Spikes | Make:. Make: DIY Projects and Ideas for Makers*.  Retrieved 5 February 2017, from [http://makezine.com/projects/make-42/cyberpunk-spikes/](http://makezine.com/projects/make-42/cyberpunk-spikes/)
+- *The Magic of NeoPixels | Adafruit NeoPixel Überguide | Adafruit Learning System*.  (2017).  *Learn.adafruit.com*.  Retrieved 25 March 2017, from [https://learn.adafruit.com/adafruit-neopixel-uberguide/overview](https://learn.adafruit.com/adafruit-neopixel-uberguide/overview)
 - Tomesh, T.  (2017).  *trevortomesh/OSHRepo*.  *GitHub*.  Retrieved 5 February 2017, from [https://github.com/trevortomesh/OSHRepo](https://github.com/trevortomesh/OSHRepo)
 
 
 ## Version History
+version 1.2.0
+- added reference to NeoPixel guide
+
 version 1.1.5
 - fixing formatting errors in README
 
