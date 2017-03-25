@@ -37,7 +37,7 @@
  *  Connect a Yellow wire from Arduino Uno Pin 2 to j3
  *  
  * Date:
- *  2017-03-22
+ *  2017-03-24
  * 
  * Name:
  *  Richard Yeomans
@@ -71,35 +71,32 @@ int cpNeoPixel;
 int cpNeoPixelColor;
 
 // Sound mechanism details
-int soundSensorThresh;
-int soundSensorMax;
-int soundSensorMin;
-const int soundSensorHistorySize = 10;
-int soundSensorHistory[soundSensorHistorySize];
-int soundSensorHistoryItem;
-int soundSensorHistoryMax;
-int soundSensorHistoryMin;
-int soundSensorHistoryAverage;
+const int soundSensorThresh = 339;
+const int soundSensorRange = 100;
+int soundSensorMax = soundSensorThresh + (soundSensorRange / 2);
+int soundSensorMin = soundSensorThresh - (soundSensorRange / 2);
 
 // Sound mechanism details - Bars
 const int soundBarNeoPixelCount = 10;
+int soundBarNeoPixelMin = 0;
+int soundBarNeoPixelMax = soundBarNeoPixelCount - 1;
+float soundBarNeoPixelMid = soundBarNeoPixelMax / 2.0;
 boolean soundBarNeoPixelActive[soundBarNeoPixelCount];
 int soundBarNeoPixelColorR[soundBarNeoPixelCount];
 int soundBarNeoPixelColorG[soundBarNeoPixelCount];
 int soundBarNeoPixelColorB[soundBarNeoPixelCount];
 
-int soundBarMax;
-int soundBarMin;
-int soundBarPeak;
-int soundBarRaw;
-int soundBarDropRate;
-
-
-// This is the sound level history
-int historySoundSensor[5];
-
-// This is the sound level history count
-int historyCountSoundSensor = 5;
+// sound bar active is used as follows:
+//   0 - inactive
+//   1 - active, bar goes up
+//  -1 - active, bar goes down
+int soundBarActive;
+float soundBarRaw;
+boolean soundBarPeakLoActive;
+int soundBarPeakLo;
+boolean soundBarPeakHiActive;
+int soundBarPeakHi;
+const int soundBarDropRate = 1;
 
 
 // If this is true, debug mode is on
@@ -126,22 +123,12 @@ void setup() {
 
   cpNeoPixel = 0;
 
-  soundSensorThresh = 338;
-  soundSensorHistoryItem = 0;
-  for (int i = 0; i < soundSensorHistorySize; i++) {
-    soundSensorHistory[i] = soundSensorThresh;
-  }
-
-  soundBarMax = 30;
-  soundBarMin = 0;
-  soundBarPeak = 0;
-  soundBarRaw = 0;
-  soundBarDropRate = 1;
-  historyCountSoundSensor = 0;
-
-  // callibration
-  soundSensorMax = soundSensorThresh;
-  soundSensorMin = soundSensorThresh;
+  soundBarActive = 0;
+  soundBarRaw = soundBarNeoPixelMid;
+  soundBarPeakLoActive = false;
+  soundBarPeakLo = soundBarNeoPixelMid;
+  soundBarPeakHiActive = false;
+  soundBarPeakHi = soundBarNeoPixelMid;
 }
 
 
@@ -157,92 +144,88 @@ void loop() {
   boolean stateButton2 = CircuitPlayground.rightButton();
   int stateSoundSensor = CircuitPlayground.soundSensor();
 
-  // update sound sensor history
-  soundSensorHistoryItem++;
-  if (soundSensorHistoryItem >= soundSensorHistorySize) {
-    soundSensorHistoryItem = 0;
-  }
-  soundSensorHistory[soundSensorHistoryItem] = stateSoundSensor;
-
-  soundSensorHistoryMax = soundSensorThresh;
-  soundSensorHistoryMin = soundSensorThresh;
-  for (int i = 0; i < soundSensorHistorySize; i++) {
-    soundSensorHistoryMax = max(soundSensorHistoryMax, soundSensorHistory[i]);
-    soundSensorHistoryMin = min(soundSensorHistoryMin, soundSensorHistory[i]);
-  }
-  soundSensorHistoryAverage = soundSensorHistoryMax - soundSensorHistoryMin;
 
   // figure out sound bars
-  soundSensorMax = max(soundSensorMax, stateSoundSensor);
-  soundSensorMin = min(soundSensorMin, stateSoundSensor);
-
-  if (soundSensorHistoryAverage > 5) {
-    soundBarRaw = min(soundSensorHistoryAverage, soundBarMax);
+  soundBarRaw = float(soundBarNeoPixelMax - soundBarNeoPixelMin) / float(soundSensorMax - soundSensorMin) * float(stateSoundSensor - soundSensorMin) + float(soundBarNeoPixelMin);
+  soundBarRaw = constrain(soundBarRaw, soundBarNeoPixelMin, soundBarNeoPixelMax);
+  float soundBarActiveTest = (soundBarRaw - soundBarNeoPixelMid) * 10.0;
+  if (abs(soundBarActiveTest) < 10) {
+    soundBarActive = 0;
   } else {
-    soundBarRaw = 0;
+    soundBarActive = abs(soundBarActiveTest) / soundBarActiveTest;
   }
-
-//  soundBarMax = max(soundBarMax, soundBarRaw);
-//  soundBarMin = min(soundBarMin, soundBarRaw);
 
   if (currentMillis - previousMillisCPNeoPixel > holdCPNeoPixel) {
     previousMillisCPNeoPixel = currentMillis;
-    soundBarPeak -= soundBarDropRate;
-  }
-  soundBarPeak = max(soundBarPeak, soundBarRaw);
 
-  int soundBarPeakCount = map(soundBarPeak, soundBarMin, soundBarMax, 0, soundBarNeoPixelCount);
-  int soundBarRawCount = map(soundBarRaw, soundBarMin, soundBarMax, 0, soundBarNeoPixelCount);
+    soundBarPeakLo += soundBarDropRate;
+    if (soundBarPeakLo > soundBarNeoPixelMid) {
+      soundBarPeakLo = soundBarNeoPixelMid;
+      soundBarPeakLoActive = false;
+    }
+
+    soundBarPeakHi -= soundBarDropRate;
+    if (soundBarPeakHi < soundBarNeoPixelMid) {
+      soundBarPeakHi = soundBarNeoPixelMid;
+      soundBarPeakHiActive = false;
+    }
+  }
+
+  if (soundBarActive != 0) {
+    if (soundBarActive > 0) {
+      soundBarPeakHi = max(soundBarPeakHi, soundBarRaw);
+      soundBarPeakHiActive = true;
+    } else {
+      soundBarPeakLo = min(soundBarPeakLo, soundBarRaw);
+      soundBarPeakLoActive = true;
+    }
+  }
+
   for (int i = 0; i < soundBarNeoPixelCount; i++) {
-    if (i < soundBarPeakCount) {
-      if (i < soundBarRawCount) {
-        soundBarNeoPixelColorR[i] = 0;
-        soundBarNeoPixelColorG[i] = 255;
-        soundBarNeoPixelColorB[i] = 0;
+    int pickColor = 0;
+
+    if (soundBarPeakLoActive) {
+      if ((i >= soundBarPeakLo) && (i < soundBarNeoPixelMid)) {
+        pickColor = 1;
+      }
+    }
+    if (soundBarPeakHiActive) {
+      if ((i <= soundBarPeakHi) && (i > soundBarNeoPixelMid)) {
+        pickColor = 1;
+      }
+    }
+
+    if (soundBarActive != 0) {
+      if (soundBarActive > 0) {
+        if ((i <= soundBarRaw) && (i > soundBarNeoPixelMid)) {
+          pickColor = 2;
+        }
       } else {
+        if ((i >= soundBarRaw) && (i < soundBarNeoPixelMid)) {
+          pickColor = 2;
+        }
+      }
+    }
+
+    switch (pickColor) {
+      case 1:  // red
         soundBarNeoPixelColorR[i] = 255;
         soundBarNeoPixelColorG[i] = 0;
         soundBarNeoPixelColorB[i] = 0;
-      }
-    } else {
-      soundBarNeoPixelColorR[i] = 0;
-      soundBarNeoPixelColorG[i] = 0;
-      soundBarNeoPixelColorB[i] = 0;
+        break;
+      case 2:  // green
+        soundBarNeoPixelColorR[i] = 0;
+        soundBarNeoPixelColorG[i] = 255;
+        soundBarNeoPixelColorB[i] = 0;
+        break;
+      default:  // black
+        soundBarNeoPixelColorR[i] = 0;
+        soundBarNeoPixelColorG[i] = 0;
+        soundBarNeoPixelColorB[i] = 0;
+        break;
     }
   }
 
-
-
-/*
-    historyCountSoundSensor++;
-    if (historyCountSoundSensor >= sizeof(historySoundSensor)) {
-      historyCountSoundSensor = 0;
-    }
-    historySoundSensor[historyCountSoundSensor] = stateSoundSensor - threshSoundSensor;
-
-    int valueSoundSensor = 0;
-    for (int i = 0; i < sizeof(historySoundSensor); i++) {
-      valueSoundSensor += historySoundSensor[i];
-    }
-    valueSoundSensor /= sizeof(historySoundSensor);
-
-    stateCPNeoPixel = true;
-    cpNeoPixelColor = valueSoundSensor * 25;
-    if (cpNeoPixelColor > 255) {
-      cpNeoPixelColor = 255;
-    }
-  } else {
-    stateCPNeoPixel = false;
-  }
-
-  if (currentMillis - previousMillisCPNeoPixel > holdCPNeoPixel) {
-    previousMillisCPNeoPixel = currentMillis;
-    cpNeoPixel++;
-    if (cpNeoPixel > 10) {
-      cpNeoPixel = 0;
-    }
-  }
-*/
 
   // update all outputs
   for (int i = 0; i < soundBarNeoPixelCount; i++) {
@@ -276,12 +259,12 @@ void loop() {
     Serial.println(soundSensorThresh);
     Serial.print("CALC out: ");
     Serial.print(soundBarRaw);
-    Serial.print("  min: ");
-    Serial.print(soundBarMin);
-    Serial.print("  max: ");
-    Serial.print(soundBarMax);
-    Serial.print("  peak: ");
-    Serial.println(soundBarPeak);
+    Serial.print("  peakLo: ");
+    Serial.print(soundBarPeakLo);
+    Serial.print("  peakHi: ");
+    Serial.print(soundBarPeakHi);
+    Serial.print("  active: ");
+    Serial.println(soundBarActive);
 
 //    Serial.print("X: "); Serial.print(CircuitPlayground.motionX());
 //    Serial.print(" \tY: "); Serial.print(CircuitPlayground.motionY());
