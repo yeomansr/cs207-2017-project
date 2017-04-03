@@ -22,15 +22,15 @@
  * Setup:
  *  Connect Ext on (nps) to GND on (cp)
  *  Connect 5V on (nps) to VBATT on (cp)
- *  Connect Din on (nps) to #6 on (cp)
+ *  Connect Din on (nps) to #10 on (cp)
  *  
  *  Connect GND on (npr) to GND on (cp)
  *  Connect PWR +5V on (npr) to VBATT on (cp)
- *  Connect Data Input on (npr) to #6 on (cp)
+ *  Connect Data Input on (npr) to #2 on (cp)
  *  
  *  
  * Date:
- *  2017-03-29
+ *  2017-04-02
  * 
  * Name:
  *  Richard Yeomans
@@ -47,23 +47,21 @@
 const int baud = 9600;
 
 // Which pins are connected to what
-const int pinShield = 6;
-const int pinMatrix = 10;
-const int pinRing = 2;
+const int pinShield = 10;
+const int pinRing = 6;
 
 // Stored time counts
-unsigned long previousMillisShield;
-unsigned long previousMillisMatrix;
-unsigned long previousMillisRing;
 unsigned long previousMillisCPNeoPixel;
+unsigned long previousMillisShield;
+unsigned long previousMillisRing;
 
 // Motion delay thresholds
-int holdShield;
-int holdMatrix;
-int holdRing;
 int holdCPNeoPixel;
+int holdShield;
+int holdRing;
 
 // The NeoPixel on the Circuit Playground details
+const int cpNeoPixelCount = 10;
 int cpNeoPixel;
 int cpNeoPixelColor;
 
@@ -77,13 +75,13 @@ int shieldX;  // corresponds with cols
 
 // Sound mechanism details
 const int soundSensorThresh = 339;
-const int soundSensorRange = 100;
+const int soundSensorRange = 50;
 int soundSensorMax = soundSensorThresh + (soundSensorRange / 2);
 int soundSensorMin = soundSensorThresh - (soundSensorRange / 2);
 
 // Sound mechanism details - Bars
 const int soundBarNeoPixelCols = shieldCols;
-float soundBarNeoPixelColRatio[] = { 0.25, 0.75, 1.0, 0.75, 0.25 };
+float soundBarNeoPixelColRatio[] = { 0.6, 0.9, 1.0, 0.9, 0.6 };
 const int soundBarNeoPixelCount = shieldRows;
 int soundBarNeoPixelMin = 0;
 int soundBarNeoPixelMax = soundBarNeoPixelCount - 1;
@@ -100,14 +98,14 @@ int soundBarNeoPixelColorB[soundBarNeoPixelCount];
 int soundBarActive;
 float soundBarRaw;
 boolean soundBarPeakLoActive;
-int soundBarPeakLo;
+float soundBarPeakLo;
 boolean soundBarPeakHiActive;
-int soundBarPeakHi;
+float soundBarPeakHi;
 const int soundBarDropRate = 1;
 
 
 // If this is true, debug mode is on
-boolean stateDebug = true;
+boolean stateDebug = false;
 
 
 void setup() {
@@ -125,14 +123,15 @@ void setup() {
   shield.show();  // Initialize all pixels to 'off'
 
   // setting initial values for variables
-  previousMillisMatrix = 0;
+  previousMillisShield = 0;
   previousMillisRing = 0;
   previousMillisCPNeoPixel = 0;
-  holdMatrix = 150;
+  holdShield = 300;
   holdRing = 150;
-  holdCPNeoPixel = 150;
+  holdCPNeoPixel = 75;
 
   cpNeoPixel = 0;
+  cpNeoPixelColor = 0;
   shieldX = 3;
   shieldY = 0;
 
@@ -157,91 +156,14 @@ void loop() {
   boolean stateButton2 = CircuitPlayground.rightButton();
   int stateSoundSensor = CircuitPlayground.soundSensor();
 
+  // run Circuit Playground NeoPixel reactor
+  cpNeoPixelDisplay(currentMillis);
+
+  // run sound reactor
   shieldDisplay(currentMillis, stateSoundSensor);
 
+
 /*
-  // figure out sound bars
-  soundBarRaw = float(soundBarNeoPixelMax - soundBarNeoPixelMin) / float(soundSensorMax - soundSensorMin) * float(stateSoundSensor - soundSensorMin) + float(soundBarNeoPixelMin);
-  soundBarRaw = constrain(soundBarRaw, soundBarNeoPixelMin, soundBarNeoPixelMax);
-  float soundBarActiveTest = (soundBarRaw - soundBarNeoPixelMid) * 10.0;
-  if (abs(soundBarActiveTest) < 10) {
-    soundBarActive = 0;
-  } else {
-    soundBarActive = abs(soundBarActiveTest) / soundBarActiveTest;
-  }
-
-  if (currentMillis - previousMillisCPNeoPixel > holdCPNeoPixel) {
-    previousMillisCPNeoPixel = currentMillis;
-
-    soundBarPeakLo += soundBarDropRate;
-    if (soundBarPeakLo > soundBarNeoPixelMid) {
-      soundBarPeakLo = soundBarNeoPixelMid;
-      soundBarPeakLoActive = false;
-    }
-
-    soundBarPeakHi -= soundBarDropRate;
-    if (soundBarPeakHi < soundBarNeoPixelMid) {
-      soundBarPeakHi = soundBarNeoPixelMid;
-      soundBarPeakHiActive = false;
-    }
-  }
-
-  if (soundBarActive != 0) {
-    if (soundBarActive > 0) {
-      soundBarPeakHi = max(soundBarPeakHi, soundBarRaw);
-      soundBarPeakHiActive = true;
-    } else {
-      soundBarPeakLo = min(soundBarPeakLo, soundBarRaw);
-      soundBarPeakLoActive = true;
-    }
-  }
-
-  for (int i = 0; i < soundBarNeoPixelCount; i++) {
-    int pickColor = 0;
-
-    if (soundBarPeakLoActive) {
-      if ((i >= soundBarPeakLo) && (i < soundBarNeoPixelMid)) {
-        pickColor = 1;
-      }
-    }
-    if (soundBarPeakHiActive) {
-      if ((i <= soundBarPeakHi) && (i > soundBarNeoPixelMid)) {
-        pickColor = 1;
-      }
-    }
-
-    if (soundBarActive != 0) {
-      if (soundBarActive > 0) {
-        if ((i <= soundBarRaw) && (i > soundBarNeoPixelMid)) {
-          pickColor = 2;
-        }
-      } else {
-        if ((i >= soundBarRaw) && (i < soundBarNeoPixelMid)) {
-          pickColor = 2;
-        }
-      }
-    }
-
-    switch (pickColor) {
-      case 1:  // red
-        soundBarNeoPixelColorR[i] = 255;
-        soundBarNeoPixelColorG[i] = 0;
-        soundBarNeoPixelColorB[i] = 0;
-        break;
-      case 2:  // green
-        soundBarNeoPixelColorR[i] = 0;
-        soundBarNeoPixelColorG[i] = 255;
-        soundBarNeoPixelColorB[i] = 0;
-        break;
-      default:  // black
-        soundBarNeoPixelColorR[i] = 0;
-        soundBarNeoPixelColorG[i] = 0;
-        soundBarNeoPixelColorB[i] = 0;
-        break;
-    }
-  }
-*/
-
   // update all outputs
   for (int i = 0; i < soundBarNeoPixelCount; i++) {
     if (soundBarNeoPixelActive[i]) {
@@ -250,16 +172,7 @@ void loop() {
       CircuitPlayground.setPixelColor(i, soundBarNeoPixelColorR[i], soundBarNeoPixelColorG[i], soundBarNeoPixelColorB[i]);
     }
   }
-/*
-  if (stateCPNeoPixel) {
-    for (int i = 0; i < 10; i++) {
-      CircuitPlayground.setPixelColor(i, CircuitPlayground.colorWheel(cpNeoPixelColor));
-    }
-  } else {
-    CircuitPlayground.clearPixels();
-  }
 */
-
 
   // debuging code for displays
   int pixel;
@@ -278,7 +191,7 @@ void loop() {
 
     pixel = shieldPixel(shieldY, shieldX);
     shield.setPixelColor(pixel, 127, 127, 127);
-//    shield.show();
+    shield.show();
   }
 
   // send message to serial output
@@ -322,6 +235,31 @@ void loop() {
 }
 
 
+void cpNeoPixelDisplay(unsigned long currentMillis) {
+  // update Circuit Playground NeoPixels
+
+  // change NeoPixel to illuminate
+  if (currentMillis - previousMillisCPNeoPixel > holdCPNeoPixel) {
+    previousMillisCPNeoPixel = currentMillis;
+
+    cpNeoPixel++;
+    if (cpNeoPixel >= cpNeoPixelCount) {
+      cpNeoPixel = 0;
+    }
+  }
+
+  // change colour of NeoPixel
+  cpNeoPixelColor++;
+  if (cpNeoPixelColor >= 255) {
+    cpNeoPixelColor = 0;
+  }
+
+  // update NeoPixels
+  CircuitPlayground.clearPixels();
+  CircuitPlayground.setPixelColor(cpNeoPixel, CircuitPlayground.colorWheel(cpNeoPixelColor));
+}
+
+
 int shieldPixel(int row, int col) {
   // return the NeoPixel number for the desired row and col
   // remember that row 0 is first row, and col 0 is first col
@@ -336,7 +274,7 @@ void shieldDisplay(unsigned long currentMillis, int valueRaw) {
   soundBarRaw = float(soundBarNeoPixelMax - soundBarNeoPixelMin) / float(soundSensorMax - soundSensorMin) * float(valueRaw - soundSensorMin) + float(soundBarNeoPixelMin);
 
   // if sound bar raw value is outside range, limit
-  soundBarRaw = constrain(soundBarRaw, soundBarNeoPixelMin, soundBarNeoPixelMax);
+  soundBarRaw = constrain(soundBarRaw, soundBarNeoPixelMin - soundBarNeoPixelCount, soundBarNeoPixelMax + soundBarNeoPixelCount);
 
   // decide if live bar should show something
   //  0 - no bar
@@ -350,8 +288,8 @@ void shieldDisplay(unsigned long currentMillis, int valueRaw) {
   }
 
   // slowly drop peak bars towards middle
-  if (currentMillis - previousMillisCPNeoPixel > holdCPNeoPixel) {
-    previousMillisCPNeoPixel = currentMillis;
+  if (currentMillis - previousMillisShield > holdShield) {
+    previousMillisShield = currentMillis;
 
     soundBarPeakLo += soundBarDropRate;
     if (soundBarPeakLo > soundBarNeoPixelMid) {
@@ -380,7 +318,9 @@ void shieldDisplay(unsigned long currentMillis, int valueRaw) {
   // draw bars on shield
   for (int i = 0; i < soundBarNeoPixelCols; i++) {
     float ratio = soundBarNeoPixelColRatio[i];
-    ratio = 1;
+    float ratioPeakLo = (soundBarPeakLo - soundBarNeoPixelMid) * ratio + soundBarNeoPixelMid;
+    float ratioPeakHi = (soundBarPeakHi - soundBarNeoPixelMid) * ratio + soundBarNeoPixelMid;
+    float ratioRaw = (soundBarRaw - soundBarNeoPixelMid) * ratio + soundBarNeoPixelMid;
 
     for (int j = 0; j < soundBarNeoPixelCount; j++) {
       // set default colour to black
@@ -388,12 +328,12 @@ void shieldDisplay(unsigned long currentMillis, int valueRaw) {
 
       // if within peak bar ranges, change to peak colour
       if (soundBarPeakLoActive) {
-        if ((j >= soundBarPeakLo) && (j < soundBarNeoPixelMid)) {
+        if ((j >= ratioPeakLo) && (j < soundBarNeoPixelMid)) {
           pickColor = 1;
         }
       }
       if (soundBarPeakHiActive) {
-        if ((j <= soundBarPeakHi) && (j > soundBarNeoPixelMid)) {
+        if ((j <= ratioPeakHi) && (j > soundBarNeoPixelMid)) {
           pickColor = 1;
         }
       }
@@ -401,11 +341,11 @@ void shieldDisplay(unsigned long currentMillis, int valueRaw) {
       // if within live bar range, change to live colour
       if (soundBarActive != 0) {
         if (soundBarActive > 0) {
-          if ((j <= soundBarRaw) && (j > soundBarNeoPixelMid)) {
+          if ((j <= ratioRaw) && (j > soundBarNeoPixelMid)) {
             pickColor = 2;
           }
         } else {
-          if ((j >= soundBarRaw) && (j < soundBarNeoPixelMid)) {
+          if ((j >= ratioRaw) && (j < soundBarNeoPixelMid)) {
             pickColor = 2;
           }
         }
@@ -432,11 +372,13 @@ void shieldDisplay(unsigned long currentMillis, int valueRaw) {
           break;
       }
 
+      // update NeoPixel colour (does not update shield immediately)
       int pixel = shieldPixel(j, i);
       shield.setPixelColor(pixel, soundBarNeoPixelColorR, soundBarNeoPixelColorG, soundBarNeoPixelColorB);
     }
   }
 
+  // update shield
   shield.show();
 }
 
