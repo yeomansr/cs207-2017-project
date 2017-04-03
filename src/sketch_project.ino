@@ -91,10 +91,6 @@ const int soundBarNeoPixelCount = shieldRows;
 int soundBarNeoPixelMin = 0;
 int soundBarNeoPixelMax = soundBarNeoPixelCount - 1;
 float soundBarNeoPixelMid = soundBarNeoPixelMax / 2.0;
-boolean soundBarNeoPixelActive[soundBarNeoPixelCount];
-int soundBarNeoPixelColorR[soundBarNeoPixelCount];
-int soundBarNeoPixelColorG[soundBarNeoPixelCount];
-int soundBarNeoPixelColorB[soundBarNeoPixelCount];
 
 // sound bar active is used as follows:
 //   0 - inactive
@@ -109,6 +105,8 @@ float soundBarPeakHi;
 const int soundBarDropRate = 1;
 
 // Accelerometer mechanism details
+const float accelThresh = 0.5;
+const float accelSensitivity = 0.03;
 float accelX;  // + is force in direction towards power connector; - is force in direction towards microUSB connector
 float accelY;  // + is force in direction towards pin #6 & #9; - is force in direction towards pin #0 & #2
 float accelZ;  // + is force in direction below playground; - is force in direction above playground
@@ -116,13 +114,13 @@ float accelZ;  // + is force in direction below playground; - is force in direct
 // Accelerometer mechanism details - Dots
 const int accelDotXColor = 0;
 float accelDotX;
-const int accelDotYColor = 100;
+const int accelDotYColor = 85;
 float accelDotY;
-const int accelDotZColor = 200;
+const int accelDotZColor = 171;
 float accelDotZ;
 
 // If this is true, debug mode is on
-boolean stateDebug = true;
+boolean stateDebug = false;
 
 
 void setup() {
@@ -148,7 +146,7 @@ void setup() {
   previousMillisRing = 0;
   previousMillisCPNeoPixel = 0;
   holdShield = 300;
-  holdRing = 150;
+  holdRing = 50;
   holdCPNeoPixel = 75;
 
   cpNeoPixel = 0;
@@ -189,7 +187,7 @@ void loop() {
   float stateMotionZ = CircuitPlayground.motionZ();
 
   // run Circuit Playground NeoPixel reactor
-//  cpNeoPixelDisplay(currentMillis);
+  cpNeoPixelDisplay(currentMillis);
 
   // run sound reactor
   shieldDisplay(currentMillis, stateSoundSensor);
@@ -198,67 +196,41 @@ void loop() {
   ringDisplay(currentMillis, stateMotionX, stateMotionY, stateMotionZ);
 
 
-/*
-  // update all outputs
-  for (int i = 0; i < soundBarNeoPixelCount; i++) {
-    if (soundBarNeoPixelActive[i]) {
-      CircuitPlayground.setPixelColor(i, soundBarNeoPixelColorR[i], soundBarNeoPixelColorG[i], soundBarNeoPixelColorB[i]);
-    } else {
-      CircuitPlayground.setPixelColor(i, soundBarNeoPixelColorR[i], soundBarNeoPixelColorG[i], soundBarNeoPixelColorB[i]);
-    }
-  }
-*/
-
   // debuging code for displays
   if (stateDebug) {
-    if ((abs(stateMotionX) < 1.0) && (abs(stateMotionY) < 1.0)) {
-      for (int i = 0; i < cpNeoPixelCount; i++) {
-        CircuitPlayground.setPixelColor(i, CircuitPlayground.colorWheel(stateMotionZ));
-      }
-    } else {
-      boolean pixelActive[cpNeoPixelCount];
-      for (int i = 0; i < cpNeoPixelCount; i++) {
-        pixelActive[i] = true; 
-      }
-
-      if (stateMotionX > 0) {
-        pixelActive[0] = false;
-        pixelActive[1] = false;
-        pixelActive[2] = false;
-        pixelActive[7] = false;
-        pixelActive[8] = false;
-        pixelActive[9] = false;
-      } else {
-        pixelActive[2] = false;
-        pixelActive[3] = false;
-        pixelActive[4] = false;
-        pixelActive[5] = false;
-        pixelActive[6] = false;
-        pixelActive[7] = false;
-      }
-      if (stateMotionY > 0) {
-        pixelActive[0] = false;
-        pixelActive[1] = false;
-        pixelActive[2] = false;
-        pixelActive[3] = false;
-        pixelActive[4] = false;
-      } else {
-        pixelActive[5] = false;
-        pixelActive[6] = false;
-        pixelActive[7] = false;
-        pixelActive[8] = false;
-        pixelActive[9] = false;
-      }
-
-      int j = 100;
-
-      CircuitPlayground.clearPixels();
-      for (int i = 0; i < cpNeoPixelCount; i++) {
-        if (pixelActive[i]) {
-          CircuitPlayground.setPixelColor(i, CircuitPlayground.colorWheel(j));
-        }
-      }
+    if (abs(stateMotionX) > 1.0) {
+      accelDotX -= stateMotionX * 0.03;
     }
+    if (abs(stateMotionY) > 1.0) {
+      accelDotY -= stateMotionY * 0.03;
+    }
+    if (abs(stateMotionZ) > 1.0) {
+      accelDotZ -= stateMotionZ * 0.03;
+    }
+
+    if (accelDotX < 0) {
+      accelDotX += cpNeoPixelCount;
+    }
+    if (accelDotX > cpNeoPixelCount) {
+      accelDotX -= cpNeoPixelCount;
+    }
+    if (accelDotY < 0) {
+      accelDotY += cpNeoPixelCount;
+    }
+    if (accelDotY > cpNeoPixelCount) {
+      accelDotY -= cpNeoPixelCount;
+    }
+    if (accelDotZ < 0) {
+      accelDotZ += cpNeoPixelCount;
+    }
+    if (accelDotZ > cpNeoPixelCount) {
+      accelDotZ -= cpNeoPixelCount;
+    }
+
+    CircuitPlayground.clearPixels();
+    CircuitPlayground.setPixelColor(accelDotX, CircuitPlayground.colorWheel(accelDotXColor));
+    CircuitPlayground.setPixelColor(accelDotY, CircuitPlayground.colorWheel(accelDotYColor));
+    CircuitPlayground.setPixelColor(accelDotZ, CircuitPlayground.colorWheel(accelDotZColor));
   }
 
   // send message to serial output
@@ -434,6 +406,78 @@ void shieldDisplay(unsigned long currentMillis, int valueRaw) {
 void ringDisplay(unsigned long currentMillis, float valueX, float valueY, float valueZ) {
   // update ring display based on accelerometer values
 
+  // slow down the movements
+  if (currentMillis - previousMillisRing > holdRing) {
+    previousMillisRing = currentMillis;
 
+    // turn off dots
+    ring.setPixelColor(accelX, 0, 0, 0);
+    ring.setPixelColor(accelY, 0, 0, 0);
+    ring.setPixelColor(accelZ, 0, 0, 0);
+
+    // accelerometer values are greater than threshold, move dot
+    if (abs(valueX) > accelThresh) {
+      accelX += valueX * accelSensitivity;
+
+      if (accelX < 0) {
+        accelX += ringTotal;
+      }
+      if (accelX > ringTotal) {
+        accelX -= ringTotal;
+      }
+    }
+    if (abs(valueY) > accelThresh) {
+      accelY += valueY * accelSensitivity;
+
+      if (accelY < 0) {
+        accelY += ringTotal;
+      }
+      if (accelY > ringTotal) {
+        accelY -= ringTotal;
+      }
+    }
+    if (abs(valueZ) > accelThresh) {
+      accelZ += valueZ * accelSensitivity;
+
+      if (accelZ < 0) {
+        accelZ += ringTotal;
+      }
+      if (accelZ > ringTotal) {
+        accelZ -= ringTotal;
+      }
+    }
+  }
+
+  // find integers from tracked values
+  int dotX = accelX;
+  int dotY = accelY;
+  int dotZ = accelZ;
+
+  // in case of overlapping, add colours together
+  if (dotX == dotY) {
+    if (dotX == dotZ) {
+      ring.setPixelColor(dotX, 255, 255, 255);
+    } else {
+      ring.setPixelColor(dotX, 255, 0, 255);
+      ring.setPixelColor(dotZ, 0, 255, 0);
+    }
+  } else {
+    if (dotX == dotZ) {
+      ring.setPixelColor(dotX, 255, 255, 0);
+      ring.setPixelColor(dotY, 0, 0, 255);
+    } else {
+      if (dotY == dotZ) {
+        ring.setPixelColor(dotX, 255, 0, 0);
+        ring.setPixelColor(dotY, 0, 255, 255);
+      } else {
+        ring.setPixelColor(dotX, 255, 0, 0);
+        ring.setPixelColor(dotY, 0, 0, 255);
+        ring.setPixelColor(dotZ, 0, 255, 0);
+      }
+    }
+  }
+
+  // update ring
+  ring.show();
 }
 
