@@ -78,6 +78,14 @@ const int ringTotal = 24;
 Adafruit_NeoPixel ring = Adafruit_NeoPixel(ringTotal, pinRing, NEO_GRB + NEO_KHZ800);
 int ringX;
 
+// Mode details
+boolean mode1State;
+boolean mode2State;
+
+// Mode details - Dot
+int dotDirection;
+boolean dotDouble;
+
 // Sound mechanism details
 const int soundSensorThresh = 339;
 const int soundSensorRange = 50;
@@ -155,6 +163,11 @@ void setup() {
   shieldY = 0;
   ringX = 0;
 
+  mode1State = false;
+  mode2State = false;
+  dotDirection = 1;
+  dotDouble = false;
+
   soundBarActive = 0;
   soundBarRaw = soundBarNeoPixelMid;
   soundBarPeakLoActive = false;
@@ -186,71 +199,67 @@ void loop() {
   float stateMotionY = CircuitPlayground.motionY();
   float stateMotionZ = CircuitPlayground.motionZ();
 
-  // run Circuit Playground NeoPixel reactor
-  cpNeoPixelDisplay(currentMillis);
+  // switch holds state, or releases state
+  if (stateSwitch) {
+    // check buttons
+    if (stateButton1 != mode1State) {
+      if (stateButton1) {
+        // change direction of playground pattern
+        dotDirection *= -1;
+      }
+    }
+    if (stateButton2 != mode2State) {
+      if (stateButton2) {
+        // toggle double of playground pattern
+        if (dotDouble) {
+          dotDouble = false;
+        } else {
+          dotDouble = true;
+        }
+      }
+    }
 
-  // run sound reactor
-  shieldDisplay(currentMillis, stateSoundSensor);
+    // update mode states
+    mode1State = stateButton1;
+    mode2State = stateButton2;
 
-  // run accelerometer reactor
-  ringDisplay(currentMillis, stateMotionX, stateMotionY, stateMotionZ);
+    // run Circuit Playground NeoPixel reactor
+    cpNeoPixelDisplay(currentMillis);
+
+    // run sound reactor
+    shieldDisplay(currentMillis, stateSoundSensor);
+
+    // run accelerometer reactor
+    ringDisplay(currentMillis, stateMotionX, stateMotionY, stateMotionZ);
+  }
 
 
+/*
   // debuging code for displays
   if (stateDebug) {
-    if (abs(stateMotionX) > 1.0) {
-      accelDotX -= stateMotionX * 0.03;
-    }
-    if (abs(stateMotionY) > 1.0) {
-      accelDotY -= stateMotionY * 0.03;
-    }
-    if (abs(stateMotionZ) > 1.0) {
-      accelDotZ -= stateMotionZ * 0.03;
-    }
+    int pixel = 0;
 
-    if (accelDotX < 0) {
-      accelDotX += cpNeoPixelCount;
-    }
-    if (accelDotX > cpNeoPixelCount) {
-      accelDotX -= cpNeoPixelCount;
-    }
-    if (accelDotY < 0) {
-      accelDotY += cpNeoPixelCount;
-    }
-    if (accelDotY > cpNeoPixelCount) {
-      accelDotY -= cpNeoPixelCount;
-    }
-    if (accelDotZ < 0) {
-      accelDotZ += cpNeoPixelCount;
-    }
-    if (accelDotZ > cpNeoPixelCount) {
-      accelDotZ -= cpNeoPixelCount;
+    if (stateSwitch) {
+      pixel = 5;
     }
 
     CircuitPlayground.clearPixels();
-    CircuitPlayground.setPixelColor(accelDotX, CircuitPlayground.colorWheel(accelDotXColor));
-    CircuitPlayground.setPixelColor(accelDotY, CircuitPlayground.colorWheel(accelDotYColor));
-    CircuitPlayground.setPixelColor(accelDotZ, CircuitPlayground.colorWheel(accelDotZColor));
+    CircuitPlayground.setPixelColor(pixel, CircuitPlayground.colorWheel(0));
   }
+*/
 
   // send message to serial output
   if (stateDebug) {
     // accelerometer details
     Serial.println();
-    Serial.print("VAR X: ");
-    Serial.print(stateMotionX);
-    Serial.print("  Y: ");
-    Serial.print(stateMotionY);
-    Serial.print("  Z: ");
-    Serial.println(stateMotionZ);
-    Serial.print("LIVE X: ");
-    Serial.print(CircuitPlayground.motionX());
-    Serial.print("  Y: ");
-    Serial.print(CircuitPlayground.motionY());
-    Serial.print("  Z: ");
-    Serial.println(CircuitPlayground.motionZ());
+    Serial.print("Switch: ");
+    Serial.print(stateSwitch);
+    Serial.print("  But 1: ");
+    Serial.print(stateButton1);
+    Serial.print("  But 2: ");
+    Serial.println(stateButton2);
 
-    delay(20);
+    delay(120);
   }
 }
 
@@ -262,9 +271,12 @@ void cpNeoPixelDisplay(unsigned long currentMillis) {
   if (currentMillis - previousMillisCPNeoPixel > holdCPNeoPixel) {
     previousMillisCPNeoPixel = currentMillis;
 
-    cpNeoPixel++;
+    cpNeoPixel += dotDirection;
+    if (cpNeoPixel < 0) {
+      cpNeoPixel += cpNeoPixelCount;
+    }
     if (cpNeoPixel >= cpNeoPixelCount) {
-      cpNeoPixel = 0;
+      cpNeoPixel -= cpNeoPixelCount;
     }
   }
 
@@ -277,6 +289,9 @@ void cpNeoPixelDisplay(unsigned long currentMillis) {
   // update NeoPixels
   CircuitPlayground.clearPixels();
   CircuitPlayground.setPixelColor(cpNeoPixel, CircuitPlayground.colorWheel(cpNeoPixelColor));
+  if (dotDouble) {
+    CircuitPlayground.setPixelColor(cpNeoPixelCount - cpNeoPixel - 1, CircuitPlayground.colorWheel(cpNeoPixelColor));
+  }
 }
 
 
