@@ -73,6 +73,11 @@ Adafruit_NeoPixel shield = Adafruit_NeoPixel(shieldTotal, pinShield, NEO_GRB + N
 int shieldY;  // corresponds with rows
 int shieldX;  // corresponds with cols
 
+// Adafruit NeoPixel Ring - 24 x 5050 RGB LED details
+const int ringTotal = 24;
+Adafruit_NeoPixel ring = Adafruit_NeoPixel(ringTotal, pinRing, NEO_GRB + NEO_KHZ800);
+int ringX;
+
 // Sound mechanism details
 const int soundSensorThresh = 339;
 const int soundSensorRange = 50;
@@ -103,9 +108,21 @@ boolean soundBarPeakHiActive;
 float soundBarPeakHi;
 const int soundBarDropRate = 1;
 
+// Accelerometer mechanism details
+float accelX;  // + is force in direction towards power connector; - is force in direction towards microUSB connector
+float accelY;  // + is force in direction towards pin #6 & #9; - is force in direction towards pin #0 & #2
+float accelZ;  // + is force in direction below playground; - is force in direction above playground
+
+// Accelerometer mechanism details - Dots
+const int accelDotXColor = 0;
+float accelDotX;
+const int accelDotYColor = 100;
+float accelDotY;
+const int accelDotZColor = 200;
+float accelDotZ;
 
 // If this is true, debug mode is on
-boolean stateDebug = false;
+boolean stateDebug = true;
 
 
 void setup() {
@@ -122,6 +139,10 @@ void setup() {
   shield.begin();
   shield.show();  // Initialize all pixels to 'off'
 
+  // initialize NeoPixel Ring
+  ring.begin();
+  ring.show();  // Initialize all pixels to 'off'
+
   // setting initial values for variables
   previousMillisShield = 0;
   previousMillisRing = 0;
@@ -134,6 +155,7 @@ void setup() {
   cpNeoPixelColor = 0;
   shieldX = 3;
   shieldY = 0;
+  ringX = 0;
 
   soundBarActive = 0;
   soundBarRaw = soundBarNeoPixelMid;
@@ -141,6 +163,13 @@ void setup() {
   soundBarPeakLo = soundBarNeoPixelMid;
   soundBarPeakHiActive = false;
   soundBarPeakHi = soundBarNeoPixelMid;
+
+  accelX = 0;
+  accelY = 0;
+  accelZ = 0;
+  accelDotX = 0;
+  accelDotY = 0;
+  accelDotZ = 0;
 }
 
 
@@ -155,12 +184,18 @@ void loop() {
   boolean stateButton1 = CircuitPlayground.leftButton();
   boolean stateButton2 = CircuitPlayground.rightButton();
   int stateSoundSensor = CircuitPlayground.soundSensor();
+  float stateMotionX = CircuitPlayground.motionX();
+  float stateMotionY = CircuitPlayground.motionY();
+  float stateMotionZ = CircuitPlayground.motionZ();
 
   // run Circuit Playground NeoPixel reactor
-  cpNeoPixelDisplay(currentMillis);
+//  cpNeoPixelDisplay(currentMillis);
 
   // run sound reactor
   shieldDisplay(currentMillis, stateSoundSensor);
+
+  // run accelerometer reactor
+  ringDisplay(currentMillis, stateMotionX, stateMotionY, stateMotionZ);
 
 
 /*
@@ -175,60 +210,73 @@ void loop() {
 */
 
   // debuging code for displays
-  int pixel;
   if (stateDebug) {
-    pixel = shieldPixel(shieldY, shieldX);
-    shield.setPixelColor(pixel, 0, 0, 0);
+    if ((abs(stateMotionX) < 1.0) && (abs(stateMotionY) < 1.0)) {
+      for (int i = 0; i < cpNeoPixelCount; i++) {
+        CircuitPlayground.setPixelColor(i, CircuitPlayground.colorWheel(stateMotionZ));
+      }
+    } else {
+      boolean pixelActive[cpNeoPixelCount];
+      for (int i = 0; i < cpNeoPixelCount; i++) {
+        pixelActive[i] = true; 
+      }
 
-    shieldX++;
-    if(shieldX >= shieldCols) {
-      shieldX = 0;
-      shieldY++;
-      if (shieldY >= shieldRows) {
-        shieldY = 0;
+      if (stateMotionX > 0) {
+        pixelActive[0] = false;
+        pixelActive[1] = false;
+        pixelActive[2] = false;
+        pixelActive[7] = false;
+        pixelActive[8] = false;
+        pixelActive[9] = false;
+      } else {
+        pixelActive[2] = false;
+        pixelActive[3] = false;
+        pixelActive[4] = false;
+        pixelActive[5] = false;
+        pixelActive[6] = false;
+        pixelActive[7] = false;
+      }
+      if (stateMotionY > 0) {
+        pixelActive[0] = false;
+        pixelActive[1] = false;
+        pixelActive[2] = false;
+        pixelActive[3] = false;
+        pixelActive[4] = false;
+      } else {
+        pixelActive[5] = false;
+        pixelActive[6] = false;
+        pixelActive[7] = false;
+        pixelActive[8] = false;
+        pixelActive[9] = false;
+      }
+
+      int j = 100;
+
+      CircuitPlayground.clearPixels();
+      for (int i = 0; i < cpNeoPixelCount; i++) {
+        if (pixelActive[i]) {
+          CircuitPlayground.setPixelColor(i, CircuitPlayground.colorWheel(j));
+        }
       }
     }
-
-    pixel = shieldPixel(shieldY, shieldX);
-    shield.setPixelColor(pixel, 127, 127, 127);
-    shield.show();
   }
 
   // send message to serial output
   if (stateDebug) {
-    // Sound mechanism details
+    // accelerometer details
     Serial.println();
-    Serial.print("RAW out: ");
-    Serial.print(stateSoundSensor);
-    Serial.print("  min: ");
-    Serial.print(soundSensorMin);
-    Serial.print("  max: ");
-    Serial.print(soundSensorMax);
-    Serial.print("  thresh: ");
-    Serial.println(soundSensorThresh);
-    Serial.print("CALC out: ");
-    Serial.print(soundBarRaw);
-    Serial.print("  peakLo: ");
-    Serial.print(soundBarPeakLo);
-    Serial.print("  peakHi: ");
-    Serial.print(soundBarPeakHi);
-    Serial.print("  active: ");
-    Serial.println(soundBarActive);
-    Serial.print("SHIELD rows: ");
-    Serial.print(shieldRows);
-    Serial.print("  cols: ");
-    Serial.print(shieldCols);
+    Serial.print("VAR X: ");
+    Serial.print(stateMotionX);
     Serial.print("  Y: ");
-    Serial.print(shieldY);
-    Serial.print("  X: ");
-    Serial.print(shieldX);
-    Serial.print("  obj: ");
-    Serial.println(pixel);
-
-//    Serial.print("X: "); Serial.print(CircuitPlayground.motionX());
-//    Serial.print(" \tY: "); Serial.print(CircuitPlayground.motionY());
-//    Serial.print(" \tZ: "); Serial.print(CircuitPlayground.motionZ());
-//    Serial.println(" m/s^2");
+    Serial.print(stateMotionY);
+    Serial.print("  Z: ");
+    Serial.println(stateMotionZ);
+    Serial.print("LIVE X: ");
+    Serial.print(CircuitPlayground.motionX());
+    Serial.print("  Y: ");
+    Serial.print(CircuitPlayground.motionY());
+    Serial.print("  Z: ");
+    Serial.println(CircuitPlayground.motionZ());
 
     delay(20);
   }
@@ -380,5 +428,12 @@ void shieldDisplay(unsigned long currentMillis, int valueRaw) {
 
   // update shield
   shield.show();
+}
+
+
+void ringDisplay(unsigned long currentMillis, float valueX, float valueY, float valueZ) {
+  // update ring display based on accelerometer values
+
+
 }
 
