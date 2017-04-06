@@ -88,13 +88,13 @@ boolean dotDouble;
 
 // Sound mechanism details
 const int soundSensorThresh = 339;
-const int soundSensorRange = 50;
+const int soundSensorRange = 125;
 int soundSensorMax = soundSensorThresh + (soundSensorRange / 2);
 int soundSensorMin = soundSensorThresh - (soundSensorRange / 2);
 
 // Sound mechanism details - Bars
 const int soundBarNeoPixelCols = shieldCols;
-float soundBarNeoPixelColRatio[] = { 0.6, 0.9, 1.0, 0.9, 0.6 };
+float soundBarNeoPixelColRatio[] = { 0.45, 0.85, 1.0, 0.85, 0.45 };
 const int soundBarNeoPixelCount = shieldRows;
 int soundBarNeoPixelMin = 0;
 int soundBarNeoPixelMax = soundBarNeoPixelCount - 1;
@@ -309,7 +309,7 @@ void shieldDisplay(unsigned long currentMillis, int valueRaw) {
   soundBarRaw = float(soundBarNeoPixelMax - soundBarNeoPixelMin) / float(soundSensorMax - soundSensorMin) * float(valueRaw - soundSensorMin) + float(soundBarNeoPixelMin);
 
   // if sound bar raw value is outside range, limit
-  soundBarRaw = constrain(soundBarRaw, soundBarNeoPixelMin - soundBarNeoPixelCount, soundBarNeoPixelMax + soundBarNeoPixelCount);
+  soundBarRaw = constrain(soundBarRaw, soundBarNeoPixelMin - (soundBarNeoPixelCount / 2), soundBarNeoPixelMax + (soundBarNeoPixelCount / 2));
 
   // decide if live bar should show something
   //  0 - no bar
@@ -391,7 +391,7 @@ void shieldDisplay(unsigned long currentMillis, int valueRaw) {
       int soundBarNeoPixelColorB;
       switch (pickColor) {
         case 1:  // red
-          soundBarNeoPixelColorR = 255;
+          soundBarNeoPixelColorR = 63;
           soundBarNeoPixelColorG = 0;
           soundBarNeoPixelColorB = 0;
           break;
