@@ -22,11 +22,11 @@
  * Setup:
  *  Connect Ext on (nps) to GND on (cp)
  *  Connect 5V on (nps) to VBATT on (cp)
- *  Connect Din on (nps) to #10 on (cp)
+ *  Connect Din on (nps) to #6 on (cp)
  *  
  *  Connect GND on (npr) to GND on (cp)
  *  Connect PWR +5V on (npr) to VBATT on (cp)
- *  Connect Data Input on (npr) to #2 on (cp)
+ *  Connect Data Input on (npr) to #3 on (cp)
  *  
  *  
  * Date:
@@ -47,8 +47,8 @@
 const int baud = 9600;
 
 // Which pins are connected to what
-const int pinShield = 10;
-const int pinRing = 6;
+const int pinShield = 6;
+const int pinRing = 3;
 
 // Stored time counts
 unsigned long previousMillisCPNeoPixel;
