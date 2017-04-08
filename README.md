@@ -1,4 +1,4 @@
-# Cyborg Headpiece (cs207-2017-project) [Version 1.3.2]
+# Cyborg Headpiece (cs207-2017-project) [Version 1.3.3]
 License:  [*Unlicense*](http://unlicense.org)
 
 This is the repository for Richard Yeomans' CS 207 Project.
@@ -53,7 +53,7 @@ Ultimately, the components will be connected as per the following diagrams:
 
 ![Fritzing Diagram 2][pic3]
 
-[pic2]: https://github.com/yeomansr/cs207-2017-project/blob/master/img/Project_Cyborg-Headpiece_schem.png "Fritzing Diagram 2"
+[pic3]: https://github.com/yeomansr/cs207-2017-project/blob/master/img/Project_Cyborg-Headpiece_schem.png "Fritzing Diagram 2"
 
 First, prepare the NeoPixel Shield and NeoPixel Ring by attaching some wires to the appropriate connectors:
 1. Pull the Male/Male Jumper Wires apart, so that you are working with individual wires.
@@ -147,6 +147,9 @@ It's a small team.
 
 
 ## Version History
+version 1.3.3
+- fixing formatting errors in README
+
 version 1.3.2
 - added pictures and diagrams
 
