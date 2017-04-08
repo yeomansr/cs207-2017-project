@@ -1,4 +1,4 @@
-# Cyborg Headpiece (cs207-2017-project) [Version 1.3.1]
+# Cyborg Headpiece (cs207-2017-project) [Version 1.3.2]
 License:  [*Unlicense*](http://unlicense.org)
 
 This is the repository for Richard Yeomans' CS 207 Project.
@@ -13,8 +13,8 @@ This class project has evolved a great deal from what I had originally intended.
 
 ## Manifest
 - **/doc** - technical documents (mostly PDF files)
-- **/img** - image files (including circuit diagrams)
-- **/src** - source code files (.ino)
+- **/img** - image files (including Fritzing circuit diagrams)
+- **/src** - source code file (.ino)
 - **/LICENSE** - Unlicense file
 - **/README.md** - this file
 
@@ -23,7 +23,7 @@ This class project has evolved a great deal from what I had originally intended.
 The following constitutes the materials I used in this project.  Many of these materials can be replaced with other similar materials as appropriate.
 ### Dependencies
 - [add support for Adafruit to Arduino IDE](https://learn.adafruit.com/introducing-circuit-playground/arduino-1-dot-6-x-ide)
-- [Adafruit NeoPixel Library](https://github.com/adafruit/Adafruit_NeoPixel)
+- [Adafruit NeoPixel Library](https://github.com/adafruit/Adafruit_NeoPixel) (not used, but helpful)
 
 ### Bill of Materials
 - 1x [Adafruit Circuit Playground - Developer Edition](https://www.adafruit.com/products/3000)
@@ -45,6 +45,16 @@ The following constitutes the materials I used in this project.  Many of these m
 
 
 ## Build Instructions
+Ultimately, the components will be connected as per the following diagrams:
+
+![Fritzing Diagram 1][pic2]
+
+[pic2]: https://github.com/yeomansr/cs207-2017-project/blob/master/img/Project_Cyborg-Headpiece_bb.png "Fritzing Diagram 1"
+
+![Fritzing Diagram 2][pic3]
+
+[pic2]: https://github.com/yeomansr/cs207-2017-project/blob/master/img/Project_Cyborg-Headpiece_schem.png "Fritzing Diagram 2"
+
 First, prepare the NeoPixel Shield and NeoPixel Ring by attaching some wires to the appropriate connectors:
 1. Pull the Male/Male Jumper Wires apart, so that you are working with individual wires.
 2. Take a black wire and cut it in half.
@@ -57,7 +67,15 @@ First, prepare the NeoPixel Shield and NeoPixel Ring by attaching some wires to 
 9. Repeat steps 2 to 8, this time using a red wire, and connecting to *5V* on the NeoPixel Shield, and connecting to *PWR +5V* on the NeoPixel Ring.
 10. Repeat steps 2 to 8, this time using a blue wire, and connecting to *Din* on the NeoPixel Shield, and connecting to *Data Input* on the NeoPixel Ring.
 
+![NeoPixel Shield][pic4]
+
+[pic4]: https://github.com/yeomansr/cs207-2017-project/blob/master/img/20170407_160055.jpg "NeoPixel Shield"
+
 Attach the NeoPixel Shield and NeoPixel Ring to the visor using the black thread.  Simply sew the thread through any unused connector holes in the NeoPixel Shield to the side of the visor, allowing the end where the wires are not attached hang down.  When wearing the visor, the NeoPixel Shield should hang roughly over one of the wearer's ears.
+
+![NeoPixel Ring][pic5]
+
+[pic5]: https://github.com/yeomansr/cs207-2017-project/blob/master/img/20170407_160047.jpg "NeoPixel Ring"
 
 To attach the NeoPixel Ring, simply sew thread around the ring, between the NeoPixels to the end of the visor.  It will be loose to begin with, but as you sew more loops of thread to the visor, it will stabalize.  Ensure the wires are going up and over the visor.  Place the ring approximately in front of one of the wearer's eyes, sort of like a monocle.
 
@@ -66,6 +84,10 @@ Hold the Circuit Playground against the visor in an appropriate place between th
 2. Repeat steps 2 to 8 above, this time using the Female/Female wire pieces.  Cut them to appropriate lengths based on the position of the components.  Make the wire pieces a little longer than you need, so that the wires are not too tight when connected.
   - For connections to the NeoPixel Shield: black wire to *GND*, red wire to *VBATT*, blue wire to *Pin #6*
   - For connections to the NeoPixel Ring: black wire to *GND*, red wire to *VBATT*, blue wire to *Pin #3*
+
+![Circuit Playground][pic6]
+
+[pic6]: https://github.com/yeomansr/cs207-2017-project/blob/master/img/20170407_160104.jpg "Circuit Playground"
 
 Sew the Circuit Playground to the visor in the same place you picked earlier.  Once it is secured to the visor, you may now connect the male and female ends of the wires to establish the connections between the Circuit Playground and the NeoPixel Shield and NeoPixel Ring.
 
@@ -83,9 +105,21 @@ Connect the Circuit Playground using the USB cable.  Load the code *sketch_proje
 ## Usage
 The Battery Holder has a power switch on it; use this switch to turn on or off the headpiece.
 
+![Sound Reactor][pic7]
+
+[pic7]: https://github.com/yeomansr/cs207-2017-project/blob/master/img/20170407_160514.jpg "Sound Reactor"
+
 The NeoPixel Shield responds to sounds.  Talk or otherwise make some noises and you will see the NeoPixel Shield light up.
 
+![Orientation Reactor][pic8]
+
+[pic8]: https://github.com/yeomansr/cs207-2017-project/blob/master/img/20170407_160332.jpg "Orientation Reactor"
+
 The NeoPixel Ring responds to the visor's orientation.  The 3 dots will rotate around the ring based on the X, Y, and Z orientations of the Circuit Playground.  Move it around to see the effects.
+
+![Basic Operation][pic9]
+
+[pic9]: https://github.com/yeomansr/cs207-2017-project/blob/master/img/20170407_160338.jpg "Basic Operation"
 
 The Circuit Playground has some NeoPixels on it as well.  The dot will go around it to indicate that there is stuff going on.  Both buttons can be pressed and will change the behavior of the Circuit Playground dot.  Furthermore, the switch on the Circuit Playground will freeze all responses on all components when switched.
 
@@ -113,6 +147,9 @@ It's a small team.
 
 
 ## Version History
+version 1.3.2
+- added pictures and diagrams
+
 version 1.3.1
 - fixing formatting errors in README
 
