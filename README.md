@@ -1,4 +1,4 @@
-# Cyborg Headpiece (cs207-2017-project) [Version 1.3.0]
+# Cyborg Headpiece (cs207-2017-project) [Version 1.3.1]
 License:  [*Unlicense*](http://unlicense.org)
 
 This is the repository for Richard Yeomans' CS 207 Project.
@@ -57,7 +57,7 @@ First, prepare the NeoPixel Shield and NeoPixel Ring by attaching some wires to 
 9. Repeat steps 2 to 8, this time using a red wire, and connecting to *5V* on the NeoPixel Shield, and connecting to *PWR +5V* on the NeoPixel Ring.
 10. Repeat steps 2 to 8, this time using a blue wire, and connecting to *Din* on the NeoPixel Shield, and connecting to *Data Input* on the NeoPixel Ring.
 
-Attach the NeoPixel Shield and NeoPixel Ring to the visor using the black thread.  Simply sew the thread through any unused connector holes the NeoPixel Shield to the side of the visor, allowing the end where the wires are not attached hang down.  When wearing the visor, the NeoPixel Shield should hang roughly over one of the wearer's ears.
+Attach the NeoPixel Shield and NeoPixel Ring to the visor using the black thread.  Simply sew the thread through any unused connector holes in the NeoPixel Shield to the side of the visor, allowing the end where the wires are not attached hang down.  When wearing the visor, the NeoPixel Shield should hang roughly over one of the wearer's ears.
 
 To attach the NeoPixel Ring, simply sew thread around the ring, between the NeoPixels to the end of the visor.  It will be loose to begin with, but as you sew more loops of thread to the visor, it will stabalize.  Ensure the wires are going up and over the visor.  Place the ring approximately in front of one of the wearer's eyes, sort of like a monocle.
 
@@ -113,6 +113,9 @@ It's a small team.
 
 
 ## Version History
+version 1.3.1
+- fixing formatting errors in README
+
 version 1.3.0
 - updated description
 - updated Manifest
